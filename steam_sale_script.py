@@ -20,7 +20,7 @@ def send_info(data):
         "username": "SteamBot",
         "embeds": [
             {
-                "title": "Steam Sales ",
+                "title": "Steam Sales",
                 "description": sales,
                 "color": "16704809",
             }
@@ -69,9 +69,9 @@ def top_sellers():
 
     return return_list
     
-    def main ():
-        data = top_sellers()
-        send_info(data)
+def main ():
+    data = top_sellers()
+    send_info(data)
 
 #if this application was run directly, run main
 if __name__ == "__main__":
