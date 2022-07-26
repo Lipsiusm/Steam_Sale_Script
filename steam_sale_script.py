@@ -1,6 +1,6 @@
 import requests
 import json
-from games import *
+from games import Game
 from bs4 import BeautifulSoup as bs
 
 def send_info(data):
@@ -32,42 +32,51 @@ def send_info(data):
 def top_sellers():
 
     #nabbin up them current specials
-    store_url= 'https://store.steampowered.com/specials/#tab=TopSellers'
+    STORE_URL= 'https://store.steampowered.com/specials/#tab=TopSellers'
     return_games = []
     return_list = []
-    feed = requests.get(store_url)
-    soup = bs(feed.text, 'html.parser')
-    games = soup.find_all(class_=['tab_item_name', 'discount_pct', 'discount_final_price'])
-    
-    #cut tag info off the items in the list
-    for i in range (len(games)):
-        games[i] = games[i].get_text()
+    check_url_status = requests.get(STORE_URL)
 
-    for i in games:
+    #if the website is up, nab the sales
+    #otherwise send an error message to Discord
 
-        pct = games.pop(0)
-        cost = games.pop(0)
+    if check_url_status.status_code == 200:
 
-        #stripping the CDN dollar characters to save character spaces
-        cost = cost.strip('CDN')
-        title = games.pop(0)
-
-
-        #checking to see if title is a random untitled tag with ascii values
-        #48 -> 57 are numbers, as theres numbers in certain titles
-        #97 -> 122 is a - z
-        if ord(title[0].lower()) < 97 and ord(title[0].lower()) < 48 or ord(title[0].lower()) > 122 and ord(title[0].lower()) > 57:
-            break
-
-        new_game = Game(pct, cost, title)
+        feed = requests.get(STORE_URL)
+        soup = bs(feed.text, 'html.parser')
+        games = soup.find_all(class_=['tab_item_name', 'discount_pct', 'discount_final_price'])
         
-        if new_game not in return_games:
-            return_games.append(new_game)
+        #cut tag info off the items in the list
+        for i in range (len(games)):
+            games[i] = games[i].get_text()
 
-    for i in return_games:
-        return_list.append(f'{i.get_title()} - {i.get_cost()} ({i.get_discount()} off)')
+        for i in games:
 
-    return return_list
+            pct = games.pop(0)
+            cost = games.pop(0)
+
+            #stripping the CDN dollar characters to save character spaces
+            cost = cost.strip('CDN')
+            title = games.pop(0)
+
+
+            #checking to see if title is a random untitled tag with ascii values
+            #48 -> 57 are numbers, as theres numbers in certain titles
+            #97 -> 122 is a - z
+            if ord(title[0].lower()) < 97 and ord(title[0].lower()) < 48 or ord(title[0].lower()) > 122 and ord(title[0].lower()) > 57:
+                break
+
+            new_game = Game(pct, cost, title)
+            
+            if new_game not in return_games:
+                return_games.append(new_game)
+
+        for i in return_games:
+            return_list.append(f'{i.get_title()} - {i.get_cost()} ({i.get_discount()} off)')
+
+        return return_list
+    else:
+        return "Steam website is down"
     
 def main ():
     data = top_sellers()
