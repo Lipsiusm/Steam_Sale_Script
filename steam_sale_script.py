@@ -20,7 +20,7 @@ def send_info(data):
         "username": "SteamBot",
         "embeds": [
             {
-                "title": "Steam Sales",
+                "title": "CDN Steam Sales",
                 "description": sales,
                 "color": "16704809",
             }
@@ -63,8 +63,8 @@ def top_sellers():
             #checking to see if title is a random untitled tag with ascii values
             #48 -> 57 are numbers, as theres numbers in certain titles
             #97 -> 122 is a - z
-            if ord(title[0].lower()) < 97 and ord(title[0].lower()) < 48 or ord(title[0].lower()) > 122 and ord(title[0].lower()) > 57:
-                break
+            #if ord(title[0].lower()) < 97 and ord(title[0].lower()) < 48 or ord(title[0].lower()) > 122 and ord(title[0].lower()) > 57:
+                #break
 
             new_game = Game(pct, cost, title)
             
