@@ -2,6 +2,9 @@ import requests
 import json
 from games import Game
 from bs4 import BeautifulSoup as bs
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
 def send_info(data):
     
@@ -32,32 +35,41 @@ def send_info(data):
 def top_sellers():
 
     #nabbin up them current specials
-    STORE_URL= 'https://store.steampowered.com/specials/#tab=TopSellers'
+    #STORE_URL= 'https://store.steampowered.com/search/?sort_by=Reviews_DESC&supportedlang=english&specials=1&filter=topsellers'
+    STORE_URL = 'https://store.steampowered.com/search/?os=win&supportedlang=english&specials=1&hidef2p=1&filter=globaltopsellers&ndl=1'
     return_games = []
     return_list = []
     check_url_status = requests.get(STORE_URL)
+    options = FirefoxOptions()
+    options.add_argument("--headless")
+    driver = webdriver.Firefox(options=options)
+    driver.get(STORE_URL)
 
     #if the website is up, nab the sales
     #otherwise send an error message to Discord
 
     if check_url_status.status_code == 200:
-
-        feed = requests.get(STORE_URL)
-        soup = bs(feed.text, 'html.parser')
-        games = soup.find_all(class_=['tab_item_name', 'discount_pct', 'discount_final_price'])
         
+        feed = requests.get(STORE_URL)
+        soup = bs(driver.page_source, 'html.parser')
+        games = soup.find_all(class_=['title', "col search_discount responsive_secondrow", 'col search_price discounted responsive_secondrow'])
+
         #cut tag info off the items in the list
         for i in range (len(games)):
             games[i] = games[i].get_text()
+            games[i] = games[i].strip()
+
+            #some games have multiple purchase pricing options and it frigs up my game objects when the tags are blank
+            if len(games[i]) == 0:
+                games[i] = "%"
 
         for i in games:
-
+            title = games.pop(0)
             pct = games.pop(0)
-            cost = games.pop(0)
 
             #stripping the CDN dollar characters to save character spaces
-            cost = cost.strip('CDN')
-            title = games.pop(0)
+            cost_before_strip = games.pop(0)
+            cost = cost_before_strip[-5:]
 
 
             #checking to see if title is a random untitled tag with ascii values
@@ -77,6 +89,7 @@ def top_sellers():
         return return_list
     else:
         return "Steam website is down"
+    driver.quit()
     
 def main ():
     data = top_sellers()
