@@ -52,16 +52,21 @@ def top_sellers():
         
         feed = requests.get(STORE_URL)
         soup = bs(driver.page_source, 'html.parser')
-        games = soup.find_all(class_=['title', "col search_discount responsive_secondrow", 'col search_price discounted responsive_secondrow'])
+        find_games = soup.find_all(class_=['title', "col search_discount responsive_secondrow", 'col search_price discounted responsive_secondrow'])
+        games = []
 
         #cut tag info off the items in the list
-        for i in range (len(games)):
-            games[i] = games[i].get_text()
-            games[i] = games[i].strip()
+        for i in range (len(find_games)):
+            find_games[i] = find_games[i].get_text()
+            find_games[i] = find_games[i].strip()
+            
+            if len(find_games[i])== 0:
 
-            #some games have multiple purchase pricing options and it frigs up my game objects when the tags are blank
-            if len(games[i]) == 0:
-                games[i] = "%"
+                #blank entry being printed, remove the last addition
+                games.remove(games[len(games)-1])
+
+            if len(find_games[i]) > 0:
+                games.append(find_games[i])
 
         for i in games:
             title = games.pop(0)
@@ -79,12 +84,13 @@ def top_sellers():
                 #break
 
             new_game = Game(pct, cost, title)
-            
+            #print("Title is: " + title + " Cost is: " + cost + " Discount is " + pct)
             if new_game not in return_games:
                 return_games.append(new_game)
 
         for i in return_games:
             return_list.append(f'{i.get_title()} - {i.get_cost()} ({i.get_discount()} off)')
+
 
         return return_list
     else:
