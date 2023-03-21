@@ -3,7 +3,7 @@ import json
 import datetime
 from games import Game
 from bs4 import BeautifulSoup as bs
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
@@ -43,7 +43,7 @@ def top_sellers():
     check_url_status = requests.get(STORE_URL)
     options = Options()
     options.add_argument("--headless")
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Firefox(options=options)
     driver.get(STORE_URL)
 
     #if the website is up, nab the sales
@@ -99,9 +99,10 @@ def main ():
         print("Games posted successfully")
     except Exception as e:
         with open ("./SteamBot.log", "a") as logfile:
-            datetime = datetime.datetime.now()
-            logfile.write("Exception occured at: " + str(datetime))
-            logfile.write(e)
+            time = datetime.datetime.now()
+            logfile.write("Exception occured at: " + str(time))
+            logfile.write(str(e))
+			print("Error")
 
 #if this application was run directly, run main
 if __name__ == "__main__":
