@@ -1,8 +1,9 @@
 import requests
 import json
+import datetime
 from games import Game
 from bs4 import BeautifulSoup as bs
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
@@ -40,9 +41,9 @@ def top_sellers():
     return_games = []
     return_list = []
     check_url_status = requests.get(STORE_URL)
-    options = FirefoxOptions()
+    options = Options()
     options.add_argument("--headless")
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Chrome(options=options)
     driver.get(STORE_URL)
 
     #if the website is up, nab the sales
@@ -77,12 +78,6 @@ def top_sellers():
             cost = cost_before_strip[-5:]
 
 
-            #checking to see if title is a random untitled tag with ascii values
-            #48 -> 57 are numbers, as theres numbers in certain titles
-            #97 -> 122 is a - z
-            #if ord(title[0].lower()) < 97 and ord(title[0].lower()) < 48 or ord(title[0].lower()) > 122 and ord(title[0].lower()) > 57:
-                #break
-
             new_game = Game(pct, cost, title)
             #print("Title is: " + title + " Cost is: " + cost + " Discount is " + pct)
             if new_game not in return_games:
@@ -98,8 +93,15 @@ def top_sellers():
     driver.quit()
     
 def main ():
-    data = top_sellers()
-    send_info(data)
+    try:
+        data = top_sellers()
+        send_info(data)
+        print("Games posted successfully")
+    except Exception as e:
+        with open ("./SteamBot.log", "a") as logfile:
+            datetime = datetime.datetime.now()
+            logfile.write("Exception occured at: " + str(datetime))
+            logfile.write(e)
 
 #if this application was run directly, run main
 if __name__ == "__main__":
