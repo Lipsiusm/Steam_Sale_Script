@@ -1,9 +1,11 @@
 import requests
 import json
 import datetime
+import time
 from games import Game
 from bs4 import BeautifulSoup as bs
-from selenium.webdriver.firefox.options import Options
+#from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
@@ -12,7 +14,8 @@ def send_info(data):
     with open("../bot_info.json", "r") as webhook_file:
         bot_info  = json.load(webhook_file)
 
-    DIG_webhook = bot_info['DIG_WEBHOOK']
+    DIG_WEBHOOK = bot_info['DIG_WEBHOOK']
+    SMP_WEBOOK = bot_info['SMP_WEBOOK']
     
     sales = ''
 
@@ -31,7 +34,8 @@ def send_info(data):
         ],
     }
 
-    DIG_result = requests.post(DIG_webhook, data = json.dumps(DIG_data), headers={'Content-Type':'application/json'})
+    requests.post(DIG_WEBHOOK, data = json.dumps(DIG_data), headers={'Content-Type':'application/json'})
+    #requests.post(SMP_WEBOOK, data = json.dumps(DIG_data), headers={'Content-Type':'application/json'})
 
 def top_sellers():
 
@@ -93,16 +97,27 @@ def top_sellers():
     driver.quit()
     
 def main ():
-    try:
-        data = top_sellers()
-        send_info(data)
-        print("Games posted successfully")
-    except Exception as e:
-        with open ("./SteamBot.log", "a") as logfile:
-            time = datetime.datetime.now()
-            logfile.write("Exception occured at: " + str(time))
-            logfile.write(str(e))
-			print("Error")
+    contine_trying = True
+
+    #keep trying to post games, but with cpu sharing on aws sometimes it doesn't work
+    # so we're going to try every 15 minutes
+    while contine_trying:
+        try:
+            data = top_sellers()
+            send_info(data)
+            
+        except Exception as e:
+            with open ("./SteamBot.log", "a") as logfile:
+                time = datetime.datetime.now()
+                logfile.write("Exception occured at: " + str(time))
+                logfile.write(str(e))
+
+        		print("Error occured")
+                #wait 15 minutes and try again
+                time.sleep(900)
+        else:
+            print("Games posted successfully")
+            contine_trying = False
 
 #if this application was run directly, run main
 if __name__ == "__main__":
