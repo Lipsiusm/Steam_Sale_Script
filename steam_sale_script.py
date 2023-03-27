@@ -4,8 +4,7 @@ import datetime
 import time
 from games import Game
 from bs4 import BeautifulSoup as bs
-#my remote instance uses firefox, local uses chrome. be sure to name these 2 differently
-from selenium.webdriver.firefox.options import Options as FoxOptions
+#from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -47,7 +46,7 @@ def top_sellers():
     return_list = []
     check_url_status = requests.get(STORE_URL)
     options = Options()
-    #options.add_argument("--headless")
+    options.add_argument("--headless")
     driver = webdriver.Chrome(options=options)
     #driver = webdriver.Firefox(options=options)
     driver.get(STORE_URL)
@@ -125,7 +124,7 @@ def main ():
                         {
                             "title": "Error Message",
                             "description": error_str,
-                            "color": "16704809",
+                            "color": "#EC1802",
                         }
                     ],
                 }
