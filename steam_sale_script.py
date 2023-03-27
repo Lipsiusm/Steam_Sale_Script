@@ -117,7 +117,18 @@ def main ():
 
                 number_of_tries = number_of_tries - 1
                 error_str = "Exception occured at: " + str(ts) + "\n" + str(e)
-                requests.post(ERROR_WEBHOOK, data = json.dumps(error_str), headers={'Content-Type':'application/json'})
+
+                error_data = {
+                    "username": "SteamBot",
+                    "embeds": [
+                        {
+                            "title": "Error Message",
+                            "description": error_str,
+                            "color": "16704809",
+                        }
+                    ],
+                }
+                requests.post(ERROR_WEBHOOK, data = json.dumps(error_data), headers={'Content-Type':'application/json'})
 
                 #print to terminal incase you're viewing, try again in 1 minute
                 print(error_str)
