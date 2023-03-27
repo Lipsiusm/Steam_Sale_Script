@@ -4,7 +4,8 @@ import datetime
 import time
 from games import Game
 from bs4 import BeautifulSoup as bs
-from selenium.webdriver.firefox.options import Options
+#my remote instance uses firefox, local uses chrome. be sure to name these 2 differently
+from selenium.webdriver.firefox.options import Options as FoxOptions
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
