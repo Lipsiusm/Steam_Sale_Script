@@ -4,7 +4,7 @@ import datetime
 import time
 from games import Game
 from bs4 import BeautifulSoup as bs
-#from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -15,7 +15,7 @@ def send_info(data):
         bot_info  = json.load(webhook_file)
 
     DIG_WEBHOOK = bot_info['DIG_WEBHOOK']
-    SMP_WEBOOK = bot_info['SMP_WEBOOK']
+    #SMP_WEBHOOK = bot_info['SMP_WEBHOOK']
     
     sales = ''
 
@@ -35,19 +35,19 @@ def send_info(data):
     }
 
     requests.post(DIG_WEBHOOK, data = json.dumps(DIG_data), headers={'Content-Type':'application/json'})
-    #requests.post(SMP_WEBOOK, data = json.dumps(DIG_data), headers={'Content-Type':'application/json'})
+    #requests.post(SMP_WEBHOOK, data = json.dumps(DIG_data), headers={'Content-Type':'application/json'})
 
 def top_sellers():
 
     #nabbin up them current specials
-    #STORE_URL= 'https://store.steampowered.com/search/?sort_by=Reviews_DESC&supportedlang=english&specials=1&filter=topsellers'
     STORE_URL = 'https://store.steampowered.com/search/?os=win&supportedlang=english&specials=1&hidef2p=1&filter=globaltopsellers&ndl=1'
     return_games = []
     return_list = []
     check_url_status = requests.get(STORE_URL)
     options = Options()
-    options.add_argument("--headless")
-    driver = webdriver.Firefox(options=options)
+    #options.add_argument("--headless")
+    driver = webdriver.Chrome(options=options)
+    #driver = webdriver.Firefox(options=options)
     driver.get(STORE_URL)
 
     #if the website is up, nab the sales
@@ -97,26 +97,20 @@ def top_sellers():
     driver.quit()
     
 def main ():
-    contine_trying = True
 
-    #keep trying to post games, but with cpu sharing on aws sometimes it doesn't work
-    # so we're going to try every 15 minutes
-    while contine_trying:
-        try:
-            data = top_sellers()
-            send_info(data)
-            
-        except Exception as e:
-            with open ("./SteamBot.log", "a") as logfile:
-                time = datetime.datetime.now()
-                logfile.write("Exception occured at: " + str(time))
-                logfile.write(str(e))
+    try:
+        data = top_sellers()
+        send_info(data)
+        
+    except Exception as e:
+        with open ("./error_log.log", "a") as logfile:
+            ts = datetime.datetime.now()
+            logfile.write("Exception occured at: " + str(ts))
+            logfile.write(str(e))
+            print("Exception occured at: " + str(ts) + "\n" + str(e))
 
-                #wait 5 minutes and try again
-                time.sleep(300)
-        else:
-            print("Games posted successfully")
-            contine_trying = False
+    else:
+        print("Games posted successfully")
 
 #if this application was run directly, run main
 if __name__ == "__main__":
