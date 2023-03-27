@@ -112,9 +112,8 @@ def main ():
                 logfile.write("Exception occured at: " + str(time))
                 logfile.write(str(e))
 
-        		print("Error occured")
-                #wait 15 minutes and try again
-                time.sleep(900)
+                #wait 5 minutes and try again
+                time.sleep(300)
         else:
             print("Games posted successfully")
             contine_trying = False
