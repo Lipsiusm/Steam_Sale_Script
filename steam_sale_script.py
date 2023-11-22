@@ -58,13 +58,14 @@ def top_sellers():
         
         feed = requests.get(STORE_URL)
         soup = bs(driver.page_source, 'html.parser')
-        find_games = soup.find_all(class_=['title', "col search_discount responsive_secondrow", 'col search_price discounted responsive_secondrow'])
+        find_games = soup.find_all(class_=['title', 'discount_pct', "discount_final_price"])
         games = []
 
         #cut tag info off the items in the list
         for i in range (len(find_games)):
             find_games[i] = find_games[i].get_text()
             find_games[i] = find_games[i].strip()
+            #print(find_games[i])
             
             if len(find_games[i])== 0:
 
@@ -99,6 +100,14 @@ def top_sellers():
     
 def main ():
 
+        #terminal troubleshooting
+        # try:
+        #     data = top_sellers()
+        #     #send_info(data)
+        #     for sales in data:
+        #         print(sales)
+        # except Exception as e:
+        #     print(e)
     #with cpu sharing sometimes the connection times out, so we're going to try 5 times
     number_of_tries = 5
     while number_of_tries > 0:
