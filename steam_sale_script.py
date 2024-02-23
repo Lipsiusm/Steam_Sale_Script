@@ -13,13 +13,12 @@ with open("../bot_info.json", "r") as webhook_file:
     bot_info  = json.load(webhook_file)
 
     DIG_WEBHOOK = bot_info['DIG_WEBHOOK']
-    ERROR_WEBHOOK = bot_info['ERROR_WEBHOOK']
+    #ERROR_WEBHOOK = bot_info['ERROR_WEBHOOK']
     #SMP_WEBHOOK = bot_info['SMP_WEBHOOK']
 
-def send_info(data):
+def send_info(data, title):
     
     sales = ''
-
     for sale in data:
         sales = sales + f'{sale}\n'
 
@@ -28,7 +27,7 @@ def send_info(data):
         "username": "SteamBot",
         "embeds": [
             {
-                "title": "CDN Steam Sales",
+                "title": title,
                 "description": sales,
                 "color": "16704809",
             }
@@ -38,10 +37,10 @@ def send_info(data):
     requests.post(DIG_WEBHOOK, data = json.dumps(DIG_data), headers={'Content-Type':'application/json'})
     #requests.post(SMP_WEBHOOK, data = json.dumps(DIG_data), headers={'Content-Type':'application/json'})
 
-def top_sellers():
+def top_sellers(STORE_URL):
 
     #nabbin up them current specials
-    STORE_URL = 'https://store.steampowered.com/search/?os=win&supportedlang=english&specials=1&hidef2p=1&filter=globaltopsellers&ndl=1'
+    #STORE_URL = 'https://store.steampowered.com/search/?os=win&supportedlang=english&specials=1&hidef2p=1&filter=globaltopsellers&ndl=1'
     return_games = []
     return_list = []
     check_url_status = requests.get(STORE_URL)
@@ -109,44 +108,45 @@ def main ():
         # except Exception as e:
         #     print(e)
     #with cpu sharing sometimes the connection times out, so we're going to try 5 times
-    number_of_tries = 5
-    while number_of_tries > 0:
+    # number_of_tries = 5
+    # while number_of_tries > 0:
 
-        try:
-            data = top_sellers()
-            send_info(data)
+    try:
+        data = top_sellers("https://store.steampowered.com/search/?tags=492&os=win&supportedlang=english&specials=1&hidef2p=1&filter=globaltopsellers&ndl=1")
+        send_info(data, "Indie Steam Sales")
+        data = top_sellers("https://store.steampowered.com/search/?os=win&supportedlang=english&specials=1&hidef2p=1&filter=globaltopsellers&ndl=1")
+        send_info(data, "Steam Sales")
+    #catch the exception, log it, and try and post to an error message channel in discord
+    except Exception as e:
+        with open ("./error_log.log", "a") as logfile:
 
-        #catch the exception, log it, and try and post to an error message channel in discord
-        except Exception as e:
-            with open ("./error_log.log", "a") as logfile:
+            ts = datetime.datetime.now()
+            logfile.write("\nException occured at: " + str(ts))
+            logfile.write(str(e))
 
-                ts = datetime.datetime.now()
-                logfile.write("\nException occured at: " + str(ts))
-                logfile.write(str(e))
+            number_of_tries = number_of_tries - 1
+            error_str = "Exception occured at: " + str(ts) + "\n" + str(e)
 
-                number_of_tries = number_of_tries - 1
-                error_str = "Exception occured at: " + str(ts) + "\n" + str(e)
+            error_data = {
+                "username": "SteamBot",
+                "embeds": [
+                    {
+                        "title": "Error Message",
+                        "description": error_str,
+                        "color": "#EC1802",
+                    }
+                ],
+            }
+            requests.post(ERROR_WEBHOOK, data = json.dumps(error_data), headers={'Content-Type':'application/json'})
 
-                error_data = {
-                    "username": "SteamBot",
-                    "embeds": [
-                        {
-                            "title": "Error Message",
-                            "description": error_str,
-                            "color": "#EC1802",
-                        }
-                    ],
-                }
-                requests.post(ERROR_WEBHOOK, data = json.dumps(error_data), headers={'Content-Type':'application/json'})
+            #print to terminal incase you're viewing, try again in 1 minute
+            print(error_str)
+            print("Sleeping for 1 minute")
+            time.sleep(60)
 
-                #print to terminal incase you're viewing, try again in 1 minute
-                print(error_str)
-                print("Sleeping for 1 minute")
-                time.sleep(60)
-
-        else:
-            print("Games posted successfully")
-            number_of_tries = -1
+    else:
+        print("Games posted successfully")
+        number_of_tries = -1
 
 #if this application was run directly, run main
 if __name__ == "__main__":
